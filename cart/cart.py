@@ -1,5 +1,5 @@
 from decimal import Decimal
-from djnago.conf import settings
+from django.conf import settings
 from shop.models import Product
 
 class Cart(object):
@@ -23,7 +23,7 @@ class Cart(object):
         if product_id not in self.cart:
             self.cart[product_id] = {
             'quantity': 0,
-            'price': str(product_price)
+            'price': str(product.price)
             }
         if update_quantity:
             self.cart[product_id]['quantity'] = quantity
@@ -55,23 +55,23 @@ class Cart(object):
 
         cart = self.cart.copy()
         for product in products:
-            cart[str(product_id)]['product'] = product
+            cart[str(product.id)]['product'] = product
 
         for item in cart.values():
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
             yield item
 
-        def __len__(self):
-            """
-            Count all items in the cart.
-            """
-            return sum(item['quantity'] for item in self.cart.values())
+    def __len__(self):
+        """
+        Count all items in the cart.
+        """
+        return sum(item['quantity'] for item in self.cart.values())
 
-        def get_total_price(self):
-            return sum(Decimal(item['price']) * item['quantity'] for item in self.cart.values())
+    def get_total_price(self):
+        return sum(Decimal(item['price']) * item['quantity'] for item in self.cart.values())
 
-        def clear(self):
-            #remove cart from session
-            del self.session[settings.CART_SESSION_ID]
-            self.save()
+    def clear(self):
+        #remove cart from session
+        del self.session[settings.CART_SESSION_ID]
+        self.save()
